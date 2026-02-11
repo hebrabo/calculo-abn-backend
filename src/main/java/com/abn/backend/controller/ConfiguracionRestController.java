@@ -8,6 +8,7 @@ import com.abn.backend.service.ConfiguracionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/api/configuracion")
 @RequiredArgsConstructor
