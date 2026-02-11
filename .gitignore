@@ -1,0 +1,21 @@
+# --- JAVA & MAVEN (Vital per a Render) ---
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# --- INTELLIJ IDEA (Neteja el repo) ---
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# --- SISTEMA I TEMPORALS ---
+.DS_Store
+Thumbs.db
+desktop.ini
+HELP.md
+
+# --- VS CODE  ---
+.vscode/
