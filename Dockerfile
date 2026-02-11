@@ -1,10 +1,13 @@
-# Pas 1: Compilar el projecte
+# Etapa 1: Compilació
 FROM maven:3.8.5-openjdk-17 AS build
+WORKDIR /app
 COPY . .
 RUN mvn clean package -DskipTests
 
-# Pas 2: Executar l'aplicació
+# Etapa 2: Execució
 FROM openjdk:17-jdk-slim
-COPY --from=build /target/*.jar app.jar
+WORKDIR /app
+# Copiem només el fitxer .jar principal (evitem el -plain.jar)
+COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
