@@ -5,8 +5,14 @@ import lombok.Data;
 
 @Data
 public class ProgresoUpdateDTO {
+
     @Min(0) @Max(3)
     private int estrellasGanadas;
 
     private boolean desbloqueado;
+
+
+    private double tiempoSegundos;
+
+    private int intentosFallidos;
 }

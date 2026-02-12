@@ -22,6 +22,7 @@ public class ProgresoJuegoServiceImpl implements ProgresoJuegoService {
 
     @Override
     public List<ProgresoResponseDTO> obtenerProgresosPorInfante(Long infantId) {
+
         return progresoRepository.findAll().stream()
                 .filter(p -> p.getInfante().getId().equals(infantId))
                 .map(progresoMapper::toDto)
@@ -34,9 +35,16 @@ public class ProgresoJuegoServiceImpl implements ProgresoJuegoService {
         ProgresoJuego existente = progresoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Progreso no encontrado"));
 
+        // 1. Actualitzem les estrelles i l'estat
         existente.setEstrellasGanadas(dto.getEstrellasGanadas());
         existente.setDesbloqueado(dto.isDesbloqueado());
 
-        return progresoMapper.toDto(progresoRepository.save(existente));
+        // 2. AQUESTA ÉS LA PART NOVA: Analítica pedagògica
+        existente.setTiempoSegundos(dto.getTiempoSegundos());
+        existente.setIntentosFallidos(dto.getIntentosFallidos());
+
+        // 3. Guardem i convertim a DTO per retornar-ho a Unity
+        ProgresoJuego guardado = progresoRepository.save(existente);
+        return progresoMapper.toDto(guardado);
     }
 }

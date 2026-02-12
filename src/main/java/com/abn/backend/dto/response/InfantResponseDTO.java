@@ -9,5 +9,6 @@ public class InfantResponseDTO {
     private String nombre;
     private String avatar;
     private int edad;
+    private Long tutorId;
     private List<ProgresoResponseDTO> progresos;
 }

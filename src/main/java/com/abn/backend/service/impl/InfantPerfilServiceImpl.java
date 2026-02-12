@@ -50,26 +50,29 @@ public class InfantPerfilServiceImpl implements InfantPerfilService {
         InfantPerfil infant = infantMapper.toEntity(dto);
         infant.setTutor(tutor);
 
-        // LÒGICA DELS 100 JOCS
         List<ProgresoJuego> progresos = new ArrayList<>();
         for (int i = 1; i <= 100; i++) {
             ProgresoJuego p = new ProgresoJuego();
-            p.setIdJuego((long) i); // <--- Força el 'long' per evitar l'error de compilació
+            p.setIdJuego((long) i);
             p.setNombreJuego("Juego " + i);
             p.setInfante(infant);
             p.setEstrellasGanadas(0);
+            p.setTiempoSegundos(0.0); // Inicialitzem analítica
+            p.setIntentosFallidos(0);
 
-            // Bloqueig segons l'edat ABN (molt bona lògica!)
+            // Lògica de desbloqueig ABN
             if (dto.getEdad() == 3 && i <= 33) p.setDesbloqueado(true);
-            else if (dto.getEdad() == 4 && i > 33 && i <= 66) p.setDesbloqueado(true);
-            else if ((dto.getEdad() == 5 || dto.getEdad() == 6) && i > 66) p.setDesbloqueado(true);
+            else if (dto.getEdad() == 4 && i <= 66) p.setDesbloqueado(true); // 4 anys inclou nivell de 3
+            else if (dto.getEdad() >= 5) p.setDesbloqueado(true); // 5-6 anys tot obert
             else p.setDesbloqueado(false);
 
             progresos.add(p);
         }
         infant.setProgresos(progresos);
 
-        return infantMapper.toDto(infantRepository.save(infant));
+        // CLAU: saveAndFlush garanteix que els IDs dels progressos es generin ARA
+        InfantPerfil guardado = infantRepository.saveAndFlush(infant);
+        return infantMapper.toDto(guardado);
     }
 
     @Override

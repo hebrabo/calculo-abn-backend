@@ -16,9 +16,12 @@ public class ProgresoJuego {
     private long idJuego;
     private String nombreJuego;
     private boolean desbloqueado;
-    private int estrellasGanadas; // Per saber si ho ha fet molt bé (0 a 3)
+    private int estrellasGanadas;
 
-    // Cada registre de progrés pertany a un nen concret
+    // NOVES COLUMNES PER A L'ANALÍTICA
+    private double tiempoSegundos;   // Quant ha trigat el nen
+    private int intentosFallidos;    // Quants errors ha fet
+
     @ManyToOne
     @JoinColumn(name = "infante_id", nullable = false)
     @JsonIgnore

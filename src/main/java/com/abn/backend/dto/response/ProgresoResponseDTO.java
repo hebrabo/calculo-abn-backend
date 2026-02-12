@@ -9,4 +9,8 @@ public class ProgresoResponseDTO {
     private String nombreJuego;
     private boolean desbloqueado;
     private int estrellasGanadas;
+
+    // TAMBÉ LES AFEGIM AQUÍ PERQUÈ UNITY LES REBI
+    private double tiempoSegundos;
+    private int intentosFallidos;
 }
