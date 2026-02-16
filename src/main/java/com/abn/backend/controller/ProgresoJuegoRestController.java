@@ -32,4 +32,10 @@ public class ProgresoJuegoRestController {
         ProgresoResponseDTO actualizado = progresoService.actualizarProgreso(id, dto);
         return ResponseEntity.ok(actualizado);
     }
+
+    @GetMapping("/puede-jugar/{infantId}/{juegoId}")
+    public ResponseEntity<Boolean> comprobarAcceso(@PathVariable Long infantId, @PathVariable int juegoId) {
+        boolean puedeJugar = progresoService.puedeDesbloquearJuego(infantId, juegoId);
+        return ResponseEntity.ok(puedeJugar);
+    }
 }

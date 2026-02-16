@@ -7,4 +7,6 @@ import java.util.List;
 public interface ProgresoJuegoService {
     List<ProgresoResponseDTO> obtenerProgresosPorInfante(Long infantId);
     ProgresoResponseDTO actualizarProgreso(Long id, ProgresoUpdateDTO dto);
+
+    boolean puedeDesbloquearJuego(Long infantId, int juegoId);
 }

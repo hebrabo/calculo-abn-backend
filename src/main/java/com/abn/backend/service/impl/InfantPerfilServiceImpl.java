@@ -36,20 +36,23 @@ public class InfantPerfilServiceImpl implements InfantPerfilService {
 
     @Override
     public InfantResponseDTO obtenerInfantePorId(Long id) {
+        // Estil Profe: orElseThrow amb NoSuchElementException
         InfantPerfil infant = infantRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Infante no encontrado"));
+                .orElseThrow(() -> new NoSuchElementException("Infante no encontrado con id: " + id));
         return infantMapper.toDto(infant);
     }
 
     @Override
     @Transactional
     public InfantResponseDTO crearInfante(InfantCreateDTO dto) {
+        // Busquem el tutor (Relació 1:N)
         TutorPerfil tutor = tutorRepository.findById(dto.getTutorId())
                 .orElseThrow(() -> new EntityNotFoundException("Tutor no encontrado"));
 
         InfantPerfil infant = infantMapper.toEntity(dto);
         infant.setTutor(tutor);
 
+        // Lògica de Negoci: Generació automàtica dels 100 jocs ABN
         List<ProgresoJuego> progresos = new ArrayList<>();
         for (int i = 1; i <= 100; i++) {
             ProgresoJuego p = new ProgresoJuego();
@@ -57,22 +60,21 @@ public class InfantPerfilServiceImpl implements InfantPerfilService {
             p.setNombreJuego("Juego " + i);
             p.setInfante(infant);
             p.setEstrellasGanadas(0);
-            p.setTiempoSegundos(0.0); // Inicialitzem analítica
+            p.setTiempoSegundos(0.0);
             p.setIntentosFallidos(0);
 
-            // Lògica de desbloqueig ABN
+            // Filtre per edat (3-5 anys)
             if (dto.getEdad() == 3 && i <= 33) p.setDesbloqueado(true);
-            else if (dto.getEdad() == 4 && i <= 66) p.setDesbloqueado(true); // 4 anys inclou nivell de 3
-            else if (dto.getEdad() >= 5) p.setDesbloqueado(true); // 5-6 anys tot obert
+            else if (dto.getEdad() == 4 && i <= 66) p.setDesbloqueado(true);
+            else if (dto.getEdad() >= 5) p.setDesbloqueado(true);
             else p.setDesbloqueado(false);
 
             progresos.add(p);
         }
         infant.setProgresos(progresos);
 
-        // CLAU: saveAndFlush garanteix que els IDs dels progressos es generin ARA
-        InfantPerfil guardado = infantRepository.saveAndFlush(infant);
-        return infantMapper.toDto(guardado);
+        // Usem save() com el profe. Hibernate gestionarà la cascada cap als 100 progressos.
+        return infantMapper.toDto(infantRepository.save(infant));
     }
 
     @Override
@@ -81,6 +83,7 @@ public class InfantPerfilServiceImpl implements InfantPerfilService {
         InfantPerfil existente = infantRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Infante no encontrado"));
 
+        // Estil Profe: Actualitzem sobre l'objecte recuperat
         infantMapper.updateInfantFromDto(dto, existente);
         return infantMapper.toDto(infantRepository.save(existente));
     }
@@ -88,9 +91,10 @@ public class InfantPerfilServiceImpl implements InfantPerfilService {
     @Override
     @Transactional
     public void eliminarInfante(Long id) {
-        if (!infantRepository.existsById(id)) {
-            throw new EntityNotFoundException("Infante no encontrado");
-        }
-        infantRepository.deleteById(id);
+        // Verifiquem primer si existeix (Punt 5 del PDF: Lògica de control)
+        InfantPerfil infant = infantRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Infante no encontrado"));
+
+        infantRepository.delete(infant);
     }
 }
