@@ -1,16 +1,14 @@
-# Etapa 1: Compilació (fem servir Eclipse Temurin per a Java 21)
-FROM maven:3.9.6-eclipse-temurin-21 AS build
-WORKDIR /app
-COPY . .
-# Fem la compilació, eliminem el fitxer 'plain' i renomenem el correcte a 'app.jar'
-RUN mvn clean package -DskipTests && \
-    rm -f target/*-plain.jar && \
-    cp target/*.jar target/app.jar
+# Usamos una imagen base ligera con Java 17 (la que estás usando según el log)
+FROM eclipse-temurin:17-jdk-alpine
 
-# Etapa 2: Execució
-FROM eclipse-temurin:21-jdk-jammy
+# Directorio de trabajo dentro del contenedor
 WORKDIR /app
-# Copiem el fitxer .jar generat a l'etapa anterior
-COPY --from=build /app/target/app.jar app.jar
+
+# Copiamos el JAR generado por Maven al contenedor
+COPY target/*.jar app.jar
+
+# Informamos que la app escucha en el puerto 8080
 EXPOSE 8080
+
+# Comando para arrancar la aplicación
 ENTRYPOINT ["java", "-jar", "app.jar"]
