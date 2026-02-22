@@ -1,7 +1,5 @@
 package com.abn.backend.services;
 
-import com.abn.backend.dto.request.create.TutorCreateDTO;
-import com.abn.backend.dto.response.TutorResponseDTO;
 import com.abn.backend.mapper.TutorPerfilMapper;
 import com.abn.backend.model.InfantPerfil;
 import com.abn.backend.model.TutorPerfil;

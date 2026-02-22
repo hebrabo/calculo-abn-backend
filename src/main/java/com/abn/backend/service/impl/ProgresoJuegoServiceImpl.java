@@ -21,12 +21,12 @@ import java.util.NoSuchElementException;
 public class ProgresoJuegoServiceImpl implements ProgresoJuegoService {
 
     private final ProgresoJuegoRepository progresoRepository;
-    private final InfantPerfilRepository infantRepository; // Necessari per navegar per les relacions
+    private final InfantPerfilRepository infantRepository;
     private final ProgresoMapper progresoMapper;
 
     @Override
     public List<ProgresoResponseDTO> obtenerProgresosPorInfante(Long infantId) {
-        // Estil Profe: Busquem l'infant i obtenim la seua llista (Relació 1:N)
+        // Busquem l'infant i obtenim la seua llista (Relació 1:N)
         InfantPerfil infant = infantRepository.findById(infantId)
                 .orElseThrow(() -> new NoSuchElementException("Infante no encontrado"));
 
@@ -46,21 +46,20 @@ public class ProgresoJuegoServiceImpl implements ProgresoJuegoService {
         existente.setEstrellasGanadas(dto.getEstrellasGanadas());
         existente.setDesbloqueado(dto.isDesbloqueado());
 
-        // 2. Registre de l'analítica per a nens de 3 a 5 anys [cite: 2026-01-06]
+        // 2. Registre de l'analítica per a nens de 3 a 5 anys
         existente.setTiempoSegundos(dto.getTiempoSegundos());
         existente.setIntentosFallidos(dto.getIntentosFallidos());
 
-        // 3. Persistència (Funciona igual en local o a Render)
+        // 3. Persistència
         return progresoMapper.toDto(progresoRepository.save(existente));
     }
 
     @Override
     public boolean puedeDesbloquearJuego(Long infantId, int juegoId) {
-        // Estil Profe: Naveguem pels progressos de l'infant sense mètodes personalitzats al Repo
+
         InfantPerfil infant = infantRepository.findById(infantId)
                 .orElseThrow(() -> new NoSuchElementException("Infante no encontrado"));
 
-        // Lògica específica per al joc 1303 (Exemple de lògica de negoci del PDF)
         if (juegoId == 1303) {
             int estrellasJuego1 = infant.getProgresos().stream()
                     .filter(p -> p.getIdJuego() == 1301L)

@@ -72,7 +72,7 @@ public class ProgresoJuegoRestControllerTest {
     @Test
     @DisplayName("PUT /api/progresos/1 - Error per dades invàlides (Validació)")
     void actualizarProgreso_BadRequest() throws Exception {
-        // GIVEN: Suposem que les estrelles no poden ser negatives (segons el teu @Min al DTO)
+        // GIVEN: Suposem que les estrelles no poden ser negatives (segons el @Min al DTO)
         progresoUpdateDTO.setEstrellasGanadas(-1);
 
         // WHEN & THEN

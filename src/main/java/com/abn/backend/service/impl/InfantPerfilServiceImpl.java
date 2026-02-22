@@ -38,7 +38,6 @@ public class InfantPerfilServiceImpl implements InfantPerfilService {
     @Override
     @Transactional(readOnly = true)
     public InfantResponseDTO obtenerInfantePorId(Long id) {
-        // Estil Profe: orElseThrow amb NoSuchElementException per a IDs no trobats
         InfantPerfil infant = infantRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Infante no encontrado con id: " + id));
         return infantMapper.toDto(infant);
@@ -93,7 +92,6 @@ public class InfantPerfilServiceImpl implements InfantPerfilService {
         InfantPerfil existente = infantRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Infante no encontrado con ID: " + id));
 
-        // Estil Profe: Actualitzem els camps de l'objecte gestionat pel context de persistència
         infantMapper.updateInfantFromDto(dto, existente);
 
         return infantMapper.toDto(infantRepository.save(existente));

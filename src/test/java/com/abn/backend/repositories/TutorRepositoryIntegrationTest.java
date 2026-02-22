@@ -17,14 +17,14 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 @DataJpaTest
-@Testcontainers // Habilitat segons el model del professor
+@Testcontainers
 @TestPropertySource(properties = {
         "spring.jpa.hibernate.ddl-auto=create-drop",
         "spring.test.database.replace=none"
 })
 public class TutorRepositoryIntegrationTest {
 
-    // Contenidor Postgres segons el model del profe (Requisit 6)
+    // Contenidor Postgres
     @Container
     @ServiceConnection
     static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:16-alpine")
@@ -40,7 +40,7 @@ public class TutorRepositoryIntegrationTest {
 
     @Test
     void eliminarTutor_DebeEliminarConfiguracionEnCascada_RealDB() {
-        // GIVEN: Relació 1:1 per complir amb la rúbrica (Punt 1)
+        // GIVEN: Relació 1:1
         TutorPerfil tutor = new TutorPerfil();
         tutor.setEmail("tutor_integracion@abn.com");
 
@@ -58,7 +58,7 @@ public class TutorRepositoryIntegrationTest {
         tutorRepository.flush(); // Asegura el borrado en Docker
         entityManager.clear();   // Limpia la memoria para forzar lectura de disco
 
-        // THEN: Verificació de persistència real (Requisit 6)
+        // THEN: Verificació de persistència real
         assertFalse(tutorRepository.findById(guardado.getId()).isPresent());
         assertNull(entityManager.find(ConfiguracionTutor.class, idConfig),
                 "La configuració hauria d'haver estat esborrada per la cascada en Postgres");

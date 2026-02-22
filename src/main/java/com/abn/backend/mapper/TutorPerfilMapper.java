@@ -22,10 +22,10 @@ public class TutorPerfilMapper {
         dto.setId(tutor.getId());
         dto.setEmail(tutor.getEmail());
 
-        // Mapeig de la configuració seguint el model del profe
+        // Mapeig de la configuració
         dto.setConfiguracion(configuracionMapper.toDto(tutor.getConfiguracion()));
 
-        // Mapeig d'IDs de la llista d'infants (requisit per als 100 jocs)
+        // Mapeig d'IDs de la llista d'infants
         if (tutor.getInfantes() != null) {
             dto.setInfantes(tutor.getInfantes().stream().map(InfantPerfil::getId).toList());
         } else {
@@ -56,7 +56,6 @@ public class TutorPerfilMapper {
         // Actualitzem l'email
         tutor.setEmail(dto.getEmail());
 
-        // CANVI AQUÍ: El nom del mètode ha de ser exactament el que hi ha al ConfiguracionMapper
         if (dto.getConfiguracion() != null && tutor.getConfiguracion() != null) {
             configuracionMapper.updateConfigFromDto(dto.getConfiguracion(), tutor.getConfiguracion());
         }
