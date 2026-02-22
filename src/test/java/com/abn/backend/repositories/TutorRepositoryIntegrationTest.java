@@ -1,4 +1,4 @@
-package com.abn.backend.repositories;
+package com.abn.backend.repositories; // 1. Corregim el paquet (sense la 's')
 
 import com.abn.backend.model.ConfiguracionTutor;
 import com.abn.backend.model.TutorPerfil;
@@ -26,7 +26,7 @@ class TutorRepositoryIntegrationTest {
     @Test
     @DisplayName("Borrat en Cascada - Eliminar Tutor ha d'esborrar la seua Configuració (1:1)")
     void eliminarTutor_DebeEliminarConfiguracionEnCascada() {
-        // 1. GIVEN: Preparem el Tutor i la seva Configuració (Relació 1:1)
+        // GIVEN
         TutorPerfil tutor = new TutorPerfil();
         tutor.setEmail("profe_test@abn.com");
 
@@ -35,26 +35,20 @@ class TutorRepositoryIntegrationTest {
         config.setMusicaActivada(true);
         config.setVolumenEfectos(50);
 
-        // Sincronitzem la relació
+        // Usem el mètode sincronitzat de l'entitat (el que té la lògica del profe)
         tutor.setConfiguracion(config);
 
-        // Persistim el tutor (i per cascada ALL, la configuració)
         TutorPerfil guardado = tutorRepository.save(tutor);
         Long idConfig = guardado.getConfiguracion().getId();
 
-        // 2. WHEN: Executem l'acció d'esborrat
+        // WHEN
         tutorRepository.delete(guardado);
-
-        // Forcem el buidat a la BD en memòria (H2) i netegem la memòria cau
         tutorRepository.flush();
         entityManager.clear();
 
-        // 3. THEN: Verificacions de persistència
-        // Comprovem que el tutor ja no existeix
+        // THEN
         assertFalse(tutorRepository.findById(guardado.getId()).isPresent());
-
-        // Comprovem que la configuració s'ha esborrat per cascada (usant l'EntityManager)
         ConfiguracionTutor configEnBD = entityManager.find(ConfiguracionTutor.class, idConfig);
-        assertNull(configEnBD, "La configuración debería haber sido borrada por la cascada de JPA");
+        assertNull(configEnBD, "La configuración debería haber sido borrada por la cascada");
     }
 }

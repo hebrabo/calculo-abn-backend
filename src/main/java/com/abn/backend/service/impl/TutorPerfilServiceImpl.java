@@ -6,7 +6,6 @@ import com.abn.backend.dto.request.create.TutorCreateDTO;
 import com.abn.backend.dto.request.update.TutorUpdateDTO;
 import com.abn.backend.dto.response.TutorResponseDTO;
 import com.abn.backend.mapper.TutorPerfilMapper;
-import com.abn.backend.model.ConfiguracionTutor;
 import com.abn.backend.model.TutorPerfil;
 import com.abn.backend.repository.TutorPerfilRepository;
 import com.abn.backend.service.TutorPerfilService;
@@ -25,7 +24,6 @@ public class TutorPerfilServiceImpl implements TutorPerfilService {
 
     @Override
     public List<TutorResponseDTO> obtenerTodosLosTutores() {
-        // Ús del mètode estàndard findAll()
         return tutorRepository.findAll()
                 .stream()
                 .map(tutorMapper::toDto)
@@ -34,7 +32,6 @@ public class TutorPerfilServiceImpl implements TutorPerfilService {
 
     @Override
     public TutorResponseDTO obtenerTutorPorId(Long id) {
-        // Ús del mètode estàndard findById()
         TutorPerfil tutor = tutorRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Tutor con id " + id + " no encontrado"));
         return tutorMapper.toDto(tutor);
@@ -43,37 +40,27 @@ public class TutorPerfilServiceImpl implements TutorPerfilService {
     @Override
     @Transactional
     public TutorResponseDTO crearTutor(TutorCreateDTO dto) {
-        // Estil Profe: Busquem l'email filtrant la llista completa per deixar el repo buit
-        boolean existe = tutorRepository.findAll().stream()
-                .anyMatch(t -> t.getEmail().equalsIgnoreCase(dto.getEmail()));
-
-        if (existe) {
-            throw new IllegalStateException("El email ya está registrado");
-        }
-
+        // Seguim l'estil del profe: El Mapper s'encarrega de tot.
+        // Si la lògica de negoci exigeix una configuració inicial,
+        // aquesta hauria d'estar en el constructor de l'entitat o en el Mapper.
         TutorPerfil tutor = tutorMapper.toEntity(dto);
 
-        // Inicialitzem la configuració per defecte (Relació 1:1 requerida al PDF)
-        ConfiguracionTutor config = new ConfiguracionTutor();
-        config.setMusicaActivada(true);
-        config.setVolumenEfectos(80);
-        config.setIdioma("Castellano");
-        tutor.setConfiguracion(config);
-
-        return tutorMapper.toDto(tutorRepository.save(tutor));
+        // Persistim el tutor (automàticament persistirà la configuració per la cascada)
+        TutorPerfil tutorGuardado = tutorRepository.save(tutor);
+        return tutorMapper.toDto(tutorGuardado);
     }
 
     @Override
     @Transactional
     public TutorResponseDTO actualizarTutor(Long id, TutorUpdateDTO dto) {
-        // 1. Cercar l'entitat real (Estil Profe)
+        // 1. Buscar el tutor real en la BBDD por Id
         TutorPerfil existente = tutorRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Tutor no encontrado con id: " + id));
 
-        // 2. Actualitzar camps (Lògica de negoci de l'email)
-        existente.setEmail(dto.getEmail());
+        // 2. Actualizar campos usando el Mapper (igual que l'exemple del profe)
+        tutorMapper.updateTutorFromDto(dto, existente);
 
-        // 3. Guardar l'entitat modificada
+        // 3. Guardar el tutor con su estado preservado
         return tutorMapper.toDto(tutorRepository.save(existente));
     }
 
@@ -83,12 +70,12 @@ public class TutorPerfilServiceImpl implements TutorPerfilService {
         TutorPerfil tutor = tutorRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Tutor no encontrado con id: " + id));
 
-        // Comprovació de Relació 1:N (Requisit de Lògica de Negoci del PDF) [cite: 15, 18]
-        // Evitem esborrar un tutor si encara té infants de 3-5 anys associats [cite: 2026-01-06]
+        // Verificació d'infants associats (Lògica similar a les 'cuentas' del profe)
         if (tutor.getInfantes() != null && !tutor.getInfantes().isEmpty()) {
             throw new IllegalStateException("No se puede eliminar un tutor con infantes asociados.");
         }
 
+        // Eliminació en cascada de la configuració (orphanRemoval = true)
         tutorRepository.delete(tutor);
     }
 }
