@@ -1,6 +1,5 @@
 package com.abn.backend.mapper;
 
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import com.abn.backend.dto.request.create.InfantCreateDTO;
 import com.abn.backend.dto.request.update.InfantUpdateDTO;
@@ -9,7 +8,6 @@ import com.abn.backend.model.InfantPerfil;
 import org.springframework.stereotype.Component;
 
 @Component
-@Data
 @RequiredArgsConstructor
 public class InfantPerfilMapper {
 
@@ -23,6 +21,12 @@ public class InfantPerfilMapper {
         dto.setNombre(infant.getNombre());
         dto.setAvatar(infant.getAvatar());
         dto.setEdad(infant.getEdad());
+
+        // --- SOLUCIÓ AL TUTOR ID NULL ---
+        // Extraiem l'ID de l'objecte tutor vinculat a l'entitat
+        if (infant.getTutor() != null) {
+            dto.setTutorId(infant.getTutor().getId());
+        }
 
         if (infant.getProgresos() != null) {
             dto.setProgresos(infant.getProgresos().stream()
@@ -39,14 +43,15 @@ public class InfantPerfilMapper {
         infant.setNombre(dto.getNombre());
         infant.setAvatar(dto.getAvatar());
         infant.setEdad(dto.getEdad());
+        // El tutor es vincula al Service usant el tutorId del DTO
         return infant;
     }
 
     public void updateInfantFromDto(InfantUpdateDTO dto, InfantPerfil infant) {
         if (dto == null || infant == null) return;
 
-        infant.setNombre(dto.getNombre());
-        infant.setAvatar(dto.getAvatar());
-        infant.setEdad(dto.getEdad());
+        if (dto.getNombre() != null) infant.setNombre(dto.getNombre());
+        if (dto.getAvatar() != null) infant.setAvatar(dto.getAvatar());
+        if (dto.getEdad() > 0) infant.setEdad(dto.getEdad());
     }
 }

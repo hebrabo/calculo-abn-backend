@@ -28,6 +28,7 @@ public class InfantPerfilServiceImpl implements InfantPerfilService {
     private final InfantPerfilMapper infantMapper;
 
     @Override
+    @Transactional(readOnly = true)
     public List<InfantResponseDTO> obtenerTodosLosInfantes() {
         return infantRepository.findAll().stream()
                 .map(infantMapper::toDto)
@@ -35,8 +36,9 @@ public class InfantPerfilServiceImpl implements InfantPerfilService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public InfantResponseDTO obtenerInfantePorId(Long id) {
-        // Estil Profe: orElseThrow amb NoSuchElementException
+        // Estil Profe: orElseThrow amb NoSuchElementException per a IDs no trobats
         InfantPerfil infant = infantRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Infante no encontrado con id: " + id));
         return infantMapper.toDto(infant);
@@ -45,14 +47,15 @@ public class InfantPerfilServiceImpl implements InfantPerfilService {
     @Override
     @Transactional
     public InfantResponseDTO crearInfante(InfantCreateDTO dto) {
-        // Busquem el tutor (Relació 1:N)
+        // 1. Busquem el tutor (Relació 1:N). Si no existeix, llancem excepció d'integritat.
         TutorPerfil tutor = tutorRepository.findById(dto.getTutorId())
-                .orElseThrow(() -> new EntityNotFoundException("Tutor no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Tutor no encontrado con ID: " + dto.getTutorId()));
 
+        // 2. Mapegem el DTO a l'entitat base
         InfantPerfil infant = infantMapper.toEntity(dto);
         infant.setTutor(tutor);
 
-        // Lògica de Negoci: Generació automàtica dels 100 jocs ABN
+        // 3. Lògica de Negoci ABN: Generació automàtica dels 100 jocs
         List<ProgresoJuego> progresos = new ArrayList<>();
         for (int i = 1; i <= 100; i++) {
             ProgresoJuego p = new ProgresoJuego();
@@ -63,37 +66,45 @@ public class InfantPerfilServiceImpl implements InfantPerfilService {
             p.setTiempoSegundos(0.0);
             p.setIntentosFallidos(0);
 
-            // Filtre per edat (3-5 anys)
-            if (dto.getEdad() == 3 && i <= 33) p.setDesbloqueado(true);
-            else if (dto.getEdad() == 4 && i <= 66) p.setDesbloqueado(true);
-            else if (dto.getEdad() >= 5) p.setDesbloqueado(true);
-            else p.setDesbloqueado(false);
+            // Filtre de desbloqueig per edat (3-5 anys)
+            if (dto.getEdad() == 3 && i <= 33) {
+                p.setDesbloqueado(true);
+            } else if (dto.getEdad() == 4 && i <= 66) {
+                p.setDesbloqueado(true);
+            } else if (dto.getEdad() >= 5) {
+                p.setDesbloqueado(true);
+            } else {
+                p.setDesbloqueado(false);
+            }
 
             progresos.add(p);
         }
         infant.setProgresos(progresos);
 
-        // Usem save() com el profe. Hibernate gestionarà la cascada cap als 100 progressos.
-        return infantMapper.toDto(infantRepository.save(infant));
+        // 4. Guardem l'infant. Hibernate persistirà els 100 progressos gràcies al CascadeType.ALL
+        InfantPerfil guardado = infantRepository.save(infant);
+
+        return infantMapper.toDto(guardado);
     }
 
     @Override
     @Transactional
     public InfantResponseDTO actualizarInfante(Long id, InfantUpdateDTO dto) {
         InfantPerfil existente = infantRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Infante no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Infante no encontrado con ID: " + id));
 
-        // Estil Profe: Actualitzem sobre l'objecte recuperat
+        // Estil Profe: Actualitzem els camps de l'objecte gestionat pel context de persistència
         infantMapper.updateInfantFromDto(dto, existente);
+
         return infantMapper.toDto(infantRepository.save(existente));
     }
 
     @Override
     @Transactional
     public void eliminarInfante(Long id) {
-        // Verifiquem primer si existeix (Punt 5 del PDF: Lògica de control)
+        // Verificació prèvia d'existència (Lògica de control de flux)
         InfantPerfil infant = infantRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Infante no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Infante no encontrado con ID: " + id));
 
         infantRepository.delete(infant);
     }
