@@ -40,12 +40,8 @@ public class TutorPerfilServiceImpl implements TutorPerfilService {
     @Override
     @Transactional
     public TutorResponseDTO crearTutor(TutorCreateDTO dto) {
-        // Seguim l'estil del profe: El Mapper s'encarrega de tot.
-        // Si la lògica de negoci exigeix una configuració inicial,
-        // aquesta hauria d'estar en el constructor de l'entitat o en el Mapper.
         TutorPerfil tutor = tutorMapper.toEntity(dto);
 
-        // Persistim el tutor (automàticament persistirà la configuració per la cascada)
         TutorPerfil tutorGuardado = tutorRepository.save(tutor);
         return tutorMapper.toDto(tutorGuardado);
     }
@@ -57,7 +53,7 @@ public class TutorPerfilServiceImpl implements TutorPerfilService {
         TutorPerfil existente = tutorRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Tutor no encontrado con id: " + id));
 
-        // 2. Actualizar campos usando el Mapper (igual que l'exemple del profe)
+        // 2. Actualizar campos usando el Mapper
         tutorMapper.updateTutorFromDto(dto, existente);
 
         // 3. Guardar el tutor con su estado preservado
@@ -70,7 +66,7 @@ public class TutorPerfilServiceImpl implements TutorPerfilService {
         TutorPerfil tutor = tutorRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Tutor no encontrado con id: " + id));
 
-        // Verificació d'infants associats (Lògica similar a les 'cuentas' del profe)
+        // Verificació d'infants associats
         if (tutor.getInfantes() != null && !tutor.getInfantes().isEmpty()) {
             throw new IllegalStateException("No se puede eliminar un tutor con infantes asociados.");
         }

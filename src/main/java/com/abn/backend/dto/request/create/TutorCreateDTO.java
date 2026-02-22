@@ -13,7 +13,6 @@ public class TutorCreateDTO {
     @Email(message = "El formato del email no es válido")
     private String email;
 
-    // Estil Profe: La configuració és obligatòria en el moment de crear el tutor
     @Valid
     @NotNull(message = "La configuración es obligatoria.")
     private ConfiguracionCreateDTO configuracion;

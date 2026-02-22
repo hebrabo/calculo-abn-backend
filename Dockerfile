@@ -1,4 +1,4 @@
-# Usamos una imagen base ligera con Java 17 (la que estás usando según el log)
+# Usamos una imagen base ligera con Java 17
 FROM eclipse-temurin:17-jdk-alpine
 
 # Directorio de trabajo dentro del contenedor

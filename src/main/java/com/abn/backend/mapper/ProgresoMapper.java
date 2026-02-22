@@ -16,8 +16,6 @@ public class ProgresoMapper {
         dto.setNombreJuego(progreso.getNombreJuego());
         dto.setDesbloqueado(progreso.isDesbloqueado());
         dto.setEstrellasGanadas(progreso.getEstrellasGanadas());
-
-        // MAPEIG DE LES NOVES MÈTRIQUES
         dto.setTiempoSegundos(progreso.getTiempoSegundos());
         dto.setIntentosFallidos(progreso.getIntentosFallidos());
 

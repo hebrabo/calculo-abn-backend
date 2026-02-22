@@ -17,9 +17,9 @@ public class ConfiguracionTutor {
     private int volumenEfectos;
     private String idioma;
 
-    // --- EL CANVI CLAU PER A LA SINCRONITZACIÓ (ESTIL PROFE) ---
+
     @OneToOne
-    @JoinColumn(name = "id_tutor") // Aquí és on es crea físicament la columna a la BD
-    @ToString.Exclude // Evitem bucles infinits al fer log del tutor
+    @JoinColumn(name = "id_tutor")
+    @ToString.Exclude
     private TutorPerfil tutor;
 }
