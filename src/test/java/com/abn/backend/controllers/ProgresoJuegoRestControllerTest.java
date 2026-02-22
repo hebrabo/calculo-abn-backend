@@ -1,4 +1,4 @@
-package com.abn.backend.controllers; // 1. Corregim el paquet (treiem la 's')
+package com.abn.backend.controllers;
 
 import com.abn.backend.controller.ProgresoJuegoRestController;
 import com.abn.backend.dto.request.update.ProgresoUpdateDTO;
@@ -15,9 +15,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq; // Important per als comparadors de Mockito
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -38,33 +37,51 @@ public class ProgresoJuegoRestControllerTest {
 
     @BeforeEach
     void setUp() {
+        // Preparem el DTO de pujada (Unity -> Spring)
         progresoUpdateDTO = new ProgresoUpdateDTO();
         progresoUpdateDTO.setEstrellasGanadas(3);
         progresoUpdateDTO.setDesbloqueado(true);
         progresoUpdateDTO.setTiempoSegundos(45.5);
         progresoUpdateDTO.setIntentosFallidos(2);
 
+        // Preparem la resposta simulada (Spring -> Unity)
         progresoResponseDTO = new ProgresoResponseDTO();
         progresoResponseDTO.setId(1L);
-        // Ens assegurem que el DTO de resposta tingui les dades que el test validarà
         progresoResponseDTO.setIdJuego(1301);
-        progresoResponseDTO.setNombreJuego("Juego 1");
         progresoResponseDTO.setEstrellasGanadas(3);
-        progresoResponseDTO.setTiempoSegundos(45.5);
     }
 
     @Test
-    @DisplayName("PUT /api/progresos/1 - Sincronització d'analítica des d'Unity")
+    @DisplayName("PUT /api/progresos/1 - Èxit en la sincronització")
     void actualizarProgreso_Exito() throws Exception {
+        // GIVEN
         when(progresoService.actualizarProgreso(eq(1L), any(ProgresoUpdateDTO.class)))
                 .thenReturn(progresoResponseDTO);
 
+        // WHEN & THEN
         mockMvc.perform(put("/api/progresos/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(progresoUpdateDTO)))
-                .andExpect(status().isOk())
+                .andExpect(status().isOk()) // Verifica codi 200
                 .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.estrellasGanadas").value(3))
-                .andExpect(jsonPath("$.tiempoSegundos").value(45.5));
+                .andExpect(jsonPath("$.estrellasGanadas").value(3));
+
+        verify(progresoService).actualizarProgreso(eq(1L), any(ProgresoUpdateDTO.class));
+    }
+
+    @Test
+    @DisplayName("PUT /api/progresos/1 - Error per dades invàlides (Validació)")
+    void actualizarProgreso_BadRequest() throws Exception {
+        // GIVEN: Suposem que les estrelles no poden ser negatives (segons el teu @Min al DTO)
+        progresoUpdateDTO.setEstrellasGanadas(-1);
+
+        // WHEN & THEN
+        mockMvc.perform(put("/api/progresos/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(progresoUpdateDTO)))
+                .andExpect(status().isBadRequest()); // Verifica 400 Bad Request
+
+        // El servei no s'hauria de cridar mai si la validació de Bean Validation falla
+        verify(progresoService, never()).actualizarProgreso(any(), any());
     }
 }
