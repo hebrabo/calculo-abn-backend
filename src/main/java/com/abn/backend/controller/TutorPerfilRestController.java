@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import com.abn.backend.dto.request.create.TutorCreateDTO;
 import com.abn.backend.dto.request.update.TutorUpdateDTO;
 import com.abn.backend.dto.response.TutorResponseDTO;
+import com.abn.backend.dto.response.InfantResponseDTO; // <--- IMPORTANTE
 import com.abn.backend.service.TutorPerfilService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -48,6 +49,22 @@ public class TutorPerfilRestController {
     public ResponseEntity<TutorResponseDTO> obtenerTutorPorId(@PathVariable Long id) {
         TutorResponseDTO dto = tutorService.obtenerTutorPorId(id);
         return ResponseEntity.ok(dto);
+    }
+
+    // --- NOU ENDPOINT PER A UNITY (EVITA EL 404) ---
+    @Operation(summary = "Obté els infants d'un tutor", description = "Retorna la llista completa d'objectes infant associats a un tutor específic.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Llista d'infants obtinguda correctament"),
+            @ApiResponse(responseCode = "204", description = "El tutor no té infants assignats"),
+            @ApiResponse(responseCode = "404", description = "Tutor no trobat")
+    })
+    @GetMapping("/{id}/infantes")
+    public ResponseEntity<List<InfantResponseDTO>> obtenerInfantesPorTutor(@PathVariable Long id) {
+        List<InfantResponseDTO> infantes = tutorService.obtenerInfantesPorTutor(id);
+        if (infantes.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(infantes);
     }
 
     @Operation(summary = "Registra un nou tutor", description = "Crea un nou compte de tutor en el sistema i retorna les seves dades.")
