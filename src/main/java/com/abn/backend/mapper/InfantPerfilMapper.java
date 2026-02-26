@@ -22,7 +22,6 @@ public class InfantPerfilMapper {
         dto.setAvatar(infant.getAvatar());
         dto.setEdad(infant.getEdad());
 
-        // --- SOLUCIÓ AL TUTOR ID NULL ---
         // Extraiem l'ID de l'objecte tutor vinculat a l'entitat
         if (infant.getTutor() != null) {
             dto.setTutorId(infant.getTutor().getId());
